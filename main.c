@@ -25,33 +25,39 @@ int main()
 	void* window;
 	screens screen;
 	void*  image;
+	void*  image2;
+	int width;
+	int height;
 	char *buffer;
 	int pixel_bits;
 	int line_bytes;
 	int endian;
-	int width;
-	int height;
+	int count;
 
 	display = mlx_init();
 	window = mlx_new_window(display, 400 , 400, "Nezuko Chaaan");
 
 	screen.display = display;
 	screen.window = window;
-	image = mlx_new_image(display, 200 , 200);
-	buffer = mlx_get_data_addr(image, &pixel_bits, &line_bytes, &endian);
-	buffer[16100] = 255;
-	buffer[16101] = 255;
-	buffer[16102] = 255;
-	buffer[16104] = 255;
-	buffer[16105] = 255;
-	buffer[16106] = 255;
-	buffer[16108] = 255;
-	buffer[16109] = 255;
-	buffer[16110] = 255;
 
 	image = mlx_xpm_file_to_image(display,"./images/xpm/nezukoChan.xpm", &width, &height);
 
+	image2 = mlx_xpm_file_to_image(display,"./images/xpm/left_cat.xpm", &width, &height);
+
+	buffer = mlx_get_data_addr(image2, &pixel_bits, &line_bytes, &endian);
+	count = 0;
+	while (count < 23104)
+	{
+		if ((buffer[count + 0] == -1) && (buffer[count + 1] == -1) && (buffer[count + 2] == -1))
+			{
+				buffer[count + 3] = -1;
+			}
+
+		count+= 4;
+	}
+
 	mlx_put_image_to_window(display, window, image, 0,0);
+	mlx_put_image_to_window(display, window, image2, 100,100);
 	mlx_key_hook(window, destroy_display, &screen);
 	mlx_loop(display);
 	mlx_destroy_display(display);

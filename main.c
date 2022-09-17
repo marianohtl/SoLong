@@ -29,6 +29,7 @@ int main()
 	int width;
 	int height;
 	char *buffer;
+	char *buffer2;
 	int pixel_bits;
 	int line_bytes;
 	int endian;
@@ -44,13 +45,16 @@ int main()
 
 	image2 = mlx_xpm_file_to_image(display,"./images/xpm/left_cat.xpm", &width, &height);
 
-	buffer = mlx_get_data_addr(image2, &pixel_bits, &line_bytes, &endian);
+	buffer = mlx_get_data_addr(image, &pixel_bits, &line_bytes, &endian);
+	buffer2 = mlx_get_data_addr(image2, &pixel_bits, &line_bytes, &endian);
 	count = 0;
 	while (count < 23104)
 	{
-		if ((buffer[count + 0] == -1) && (buffer[count + 1] == -1) && (buffer[count + 2] == -1))
+		if ((buffer2[count + 0] == -1) && (buffer2[count + 1] == -1) && (buffer2[count + 2] == -1))
 			{
-				buffer[count + 3] = -1;
+				buffer2[count + 0] = buffer[176 * 549 * 4 + 176 * 4 + 0];
+				buffer2[count + 1] = buffer[176 * 549 * 4 + 176 * 4 + 1];
+				buffer2[count + 2] = buffer[176 * 549 * 4 + 176 * 4 + 2];
 			}
 
 		count+= 4;

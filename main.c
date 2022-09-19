@@ -19,52 +19,55 @@ int destroy_display(int key_code, void *param)
 	}
 }
 
-int main()
+void	merge_image(t_img *background, t_img *foreground, int row, int col)
 {
-	void* display;
+	int	*buffer_background;
+	int	*buffer_foreground;
+	int	pixel;
+
+	buffer_background = (int *) background->data;
+	buffer_foreground = (int *) foreground->data;
+	pixel = 0;
+	while (pixel < foreground->width * foreground->height)
+	{
+		if (buffer_foreground[pixel] == 0xFF000000)
+			buffer_foreground[pixel] = buffer_background[row * background->width + col + \
+				pixel % foreground->width + \
+				(pixel / foreground->width) * background->width];
+		pixel++;
+	}
+}
+
+int	main(void)
+{
+	t_xvar* display;
 	void* window;
 	screens screen;
-	void*  image;
-	void*  image2;
-	int width;
-	int height;
-	char *buffer;
-	char *buffer2;
-	int pixel_bits;
-	int line_bytes;
-	int endian;
-	int count;
+	t_img*  background;
+	t_img*  character;
+	int	height;
+	int	width;
+	int	start_row;
+	int	start_col;
 
 	display = mlx_init();
 	window = mlx_new_window(display, 400 , 400, "Nezuko Chaaan");
-
 	screen.display = display;
 	screen.window = window;
 
-	image = mlx_xpm_file_to_image(display,"./images/xpm/nezukoChan.xpm", &width, &height);
+	background = mlx_xpm_file_to_image(display,"./images/xpm/nezukoChan.xpm", &width, &height);
+	character = mlx_xpm_file_to_image(display,"./images/xpm/left_cat.xpm", &width, &height);
 
-	image2 = mlx_xpm_file_to_image(display,"./images/xpm/left_cat.xpm", &width, &height);
+	start_row = 200;
+	start_col = 150;
+	merge_image(background, character, start_row, start_col);
 
-	buffer = mlx_get_data_addr(image, &pixel_bits, &line_bytes, &endian);
-	buffer2 = mlx_get_data_addr(image2, &pixel_bits, &line_bytes, &endian);
-	count = 0;
-	while (count < 23104)
-	{
-		if ((buffer2[count + 0] == -1) && (buffer2[count + 1] == -1) && (buffer2[count + 2] == -1))
-			{
-				buffer2[count + 0] = buffer[176 * 549 * 4 + 176 * 4 + 0];
-				buffer2[count + 1] = buffer[176 * 549 * 4 + 176 * 4 + 1];
-				buffer2[count + 2] = buffer[176 * 549 * 4 + 176 * 4 + 2];
-			}
+	mlx_put_image_to_window(display, window, background, 0,0);
+	mlx_put_image_to_window(display, window, character, start_col, start_row);
 
-		count+= 4;
-	}
-
-	mlx_put_image_to_window(display, window, image, 0,0);
-	mlx_put_image_to_window(display, window, image2, 100,100);
 	mlx_key_hook(window, destroy_display, &screen);
 	mlx_loop(display);
-	mlx_destroy_display(display);
 
+	mlx_destroy_display(display);
 	return(0);
 }

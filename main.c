@@ -1,12 +1,22 @@
+#include "get_next_line.h"
 #include"mlx.h"
 #include"mlx_int.h"
 #include"X11/keysymdef.h"
-#define GRID 50
+#define GRID 76
+
+typedef struct maps
+{
+	char	*content;
+	int	height;
+	int	width;
+}	maps;
 
 typedef struct screens
 {
 	void *window;
 	t_xvar *display;
+	int	height;
+	int	width;
 } screens;
 
 typedef struct backgrounds
@@ -17,6 +27,7 @@ typedef struct backgrounds
 typedef struct characters
 {
 	screens *screen;
+	maps	*map;
 	t_img *right;
 	t_img *left;
 	t_img *current;
@@ -51,30 +62,37 @@ int destroy_display(void *param)
 	screens	*screen;
 
 	screen = param;
-	mlx_destroy_window(screen->display, screen->window);
 	mlx_loop_end(screen->display);
+	mlx_destroy_window(screen->display, screen->window);
+}
+
+int	is_water(maps *map, int x, int y)
+{
+	return (map->content[map->width * y / GRID + x / GRID] == '1');
 }
 
 int	move_right(void *param)
 {
 	characters	*character;
 
-	character = param;	
+	character = param;
+	if (is_water(character->map, character->col + GRID, character->row))
+		return (0);
+	mlx_put_image_to_window(character->screen->display, character->screen->window, character->background->background, character->col, character->row);
 	character->col += GRID;
 	character->current = character->right;
-	merge_image(character->background->background, character->current, character->row, character->col);
-	mlx_put_image_to_window(character->screen->display, character->screen->window, character->background->background, 0,0);
 	mlx_put_image_to_window(character->screen->display, character->screen->window, character->current, character->col, character->row);
 }
 int	move_left(void *param)
 {
 	characters	*character;
 
-	character = param;	
+	character = param;
+	if (is_water(character->map, character->col - GRID, character->row))
+		return (0);
+	mlx_put_image_to_window(character->screen->display, character->screen->window, character->background->background, character->col, character->row);
 	character->col -= GRID;
 	character->current = character->left;
-	merge_image(character->background->background, character->current, character->row, character->col);
-	mlx_put_image_to_window(character->screen->display, character->screen->window, character->background->background, 0,0);
 	mlx_put_image_to_window(character->screen->display, character->screen->window, character->current, character->col, character->row);
 }
 
@@ -82,10 +100,11 @@ int	move_up(void *param)
 {
 	characters	*character;
 
-	character = param;	
+	character = param;
+	if (is_water(character->map, character->col, character->row - GRID))
+		return (0);
+	mlx_put_image_to_window(character->screen->display, character->screen->window, character->background->background, character->col, character->row);
 	character->row -= GRID;
-	merge_image(character->background->background, character->current, character->row, character->col);
-	mlx_put_image_to_window(character->screen->display, character->screen->window, character->background->background, 0,0);
 	mlx_put_image_to_window(character->screen->display, character->screen->window, character->current, character->col, character->row);
 }
 
@@ -93,10 +112,11 @@ int	move_down(void *param)
 {
 	characters	*character;
 
-	character = param;	
+	character = param;
+	if (is_water(character->map, character->col, character->row + GRID))
+		return (0);
+	mlx_put_image_to_window(character->screen->display, character->screen->window, character->background->background, character->col, character->row);
 	character->row += GRID;
-	merge_image(character->background->background, character->current, character->row, character->col);
-	mlx_put_image_to_window(character->screen->display, character->screen->window, character->background->background, 0,0);
 	mlx_put_image_to_window(character->screen->display, character->screen->window, character->current, character->col, character->row);
 }
 
@@ -127,6 +147,77 @@ int	key_delegator(int key_code, void *param)
 	return (functions[key_code](param));
 }
 
+maps	*read_map(char *file)
+{
+	int	file_descriptor;
+	maps	*map;
+	char	*content;
+	char	*line;
+	int	height;
+	int	width;
+	size_t	size;
+
+	content = "";
+	file_descriptor = open(file, O_RDONLY);
+	if (file_descriptor < 0)
+		return (NULL);
+	line = "";
+	height = 0;
+	width = 0;
+	while (line != NULL)
+	{
+		size = len(line);
+		if (size > 0 && line[size - 1] == '\n')
+			size--;
+		content = join(content, line, len(content) + size + 1);
+		line = get_next_line(file_descriptor);
+		if (width == 0)
+			width = (int) size;
+		if (line != NULL && size == width)
+			height++;
+	}
+	map = malloc(sizeof(*map));
+	if (map == NULL)
+		return (NULL);
+	map->content = content;
+	map->height = height;
+	map->width = width;
+	return (map);
+}
+
+int	fill_map(screens *screen, maps *map, characters *character, t_img *grass, t_img *water)
+{
+	int	row;
+	int	col;
+	char	cell;
+	int	pixels_x;
+	int	pixels_y;
+
+	row = 0;
+	while (row < map->height)
+	{
+		col = 0;
+		while (col < map->width)
+		{
+			cell = map->content[row * map->width + col];
+			pixels_x = col * GRID;
+			pixels_y = row * GRID;
+			if (cell == '1')
+				mlx_put_image_to_window(screen->display, screen->window, water, pixels_x, pixels_y);
+			else
+				mlx_put_image_to_window(screen->display, screen->window, grass, pixels_x, pixels_y);
+			if (cell == 'P')
+			{
+				character->col = pixels_x;
+				character->row = pixels_y;
+				mlx_put_image_to_window(screen->display, screen->window, character->current, pixels_x, pixels_y);
+			}
+			col++;
+		}
+		row++;
+	}
+}
+
 int	main(void)
 {
 	t_xvar* display;
@@ -134,34 +225,38 @@ int	main(void)
 	screens screen;
 	characters character;
 	backgrounds background;
+	t_img	*water;
 	int	height;
 	int	width;
 	int	start_row;
 	int	start_col;
+	maps	*map;
 
-	start_row = 75;
-	start_col = 150;
+	map = read_map("maps/test_map.ber");
+	screen.height = map->height * GRID;
+	screen.width = map->width * GRID;
 	display = mlx_init();
-	window = mlx_new_window(display, 549 , 543, "Nezuko Chaaan");
+	window = mlx_new_window(display, screen.width , screen.height, "Deletinho");
 	screen.display = display;
 	screen.window = window;
 
-	background.background = mlx_xpm_file_to_image(display,"./images/xpm/nezukoChan.xpm", &width, &height);
+	background.background = mlx_xpm_file_to_image(display,"./images/xpm/grass.xpm", &width, &height);
+	water = mlx_xpm_file_to_image(display, "./images/xpm/water.xpm", &width, &height);
 	character.right = mlx_xpm_file_to_image(display,"./images/xpm/right_cat.xpm", &width, &height);
 	character.left = mlx_xpm_file_to_image(display,"./images/xpm/left_cat.xpm", &width, &height);
+	merge_image(background.background, character.right, 0, 0);
+	merge_image(background.background, character.left, 0, 0);
 	character.current = character.right;
 	character.background = &background;
-	character.col = start_col;
-	character.row = start_row;
 	character.screen = &screen;
+	character.map = map;
 
-	merge_image(background.background, character.right, start_row, start_col);
+	fill_map(&screen, map, &character, background.background, water);
+	mlx_put_image_to_window(display, window, character.current, character.col, character.row);
 
-	mlx_put_image_to_window(display, window, background.background, 0,0);
-	mlx_put_image_to_window(display, window, character.right, start_col, start_row);
 	mlx_key_hook(window, &key_delegator, &character);
 	mlx_loop(display);
-
 	mlx_destroy_display(display);
+
 	return(0);
 }

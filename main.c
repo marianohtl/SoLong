@@ -1,7 +1,6 @@
 #include "get_next_line.h"
 #include"mlx.h"
 #include"mlx_int.h"
-#include"X11/keysymdef.h"
 #define GRID 76
 
 typedef struct maps
@@ -185,7 +184,7 @@ maps	*read_map(char *file)
 	return (map);
 }
 
-int	fill_map(screens *screen, maps *map, characters *character, t_img *grass, t_img *water)
+int	fill_map(screens *screen, maps *map, characters *character, t_img *grass, t_img *water, t_img *wool, t_img *hole)
 {
 	int	row;
 	int	col;
@@ -206,6 +205,11 @@ int	fill_map(screens *screen, maps *map, characters *character, t_img *grass, t_
 				mlx_put_image_to_window(screen->display, screen->window, water, pixels_x, pixels_y);
 			else
 				mlx_put_image_to_window(screen->display, screen->window, grass, pixels_x, pixels_y);
+			
+			if(cell == 'C')
+				mlx_put_image_to_window(screen->display, screen->window, wool, pixels_x, pixels_y);
+			if(cell == 'E')
+				mlx_put_image_to_window(screen->display, screen->window, hole, pixels_x, pixels_y);
 			if (cell == 'P')
 			{
 				character->col = pixels_x;
@@ -226,6 +230,8 @@ int	main(void)
 	characters character;
 	backgrounds background;
 	t_img	*water;
+	t_img	*wool;
+	t_img	*hole;
 	int	height;
 	int	width;
 	int	start_row;
@@ -240,10 +246,14 @@ int	main(void)
 	screen.display = display;
 	screen.window = window;
 
-	background.background = mlx_xpm_file_to_image(display,"./images/xpm/grass.xpm", &width, &height);
+	background.background = mlx_xpm_file_to_image(display,"./images/xpm/sand.xpm", &width, &height);
 	water = mlx_xpm_file_to_image(display, "./images/xpm/water.xpm", &width, &height);
+	wool = mlx_xpm_file_to_image(display, "./images/xpm/wool.xpm", &width, &height);
+	hole = mlx_xpm_file_to_image(display, "./images/xpm/hole.xpm", &width, &height);
 	character.right = mlx_xpm_file_to_image(display,"./images/xpm/right_cat.xpm", &width, &height);
 	character.left = mlx_xpm_file_to_image(display,"./images/xpm/left_cat.xpm", &width, &height);
+	merge_image(background.background, wool, 0, 0);
+	merge_image(background.background, hole, 0, 0);
 	merge_image(background.background, character.right, 0, 0);
 	merge_image(background.background, character.left, 0, 0);
 	character.current = character.right;
@@ -251,9 +261,7 @@ int	main(void)
 	character.screen = &screen;
 	character.map = map;
 
-	fill_map(&screen, map, &character, background.background, water);
-	mlx_put_image_to_window(display, window, character.current, character.col, character.row);
-
+	fill_map(&screen, map, &character, background.background, water, wool, hole);
 	mlx_key_hook(window, &key_delegator, &character);
 	mlx_loop(display);
 	mlx_destroy_display(display);

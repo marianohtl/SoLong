@@ -1,4 +1,4 @@
-#include "linked_list.h"
+#include "structs.h"
 #include <stdlib.h>
 
 linked_list	*new_linked_list_element(void *content)

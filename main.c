@@ -1,14 +1,10 @@
+#include "constants.h"
 #include "get_next_line.h"
-#include"mlx.h"
-#include"mlx_int.h"
-#define GRID 76
-
-typedef struct maps
-{
-	char	*content;
-	int	height;
-	int	width;
-}	maps;
+#include "maps.h"
+#include "utils.h"
+#include "validation.h"
+#include "mlx.h"
+#include "mlx_int.h"
 
 typedef struct screens
 {
@@ -33,9 +29,15 @@ typedef struct characters
 	backgrounds *background;
 	int row;
 	int col;
+	int	movement_count;
 } characters;
 
 typedef int (*key_function)(void *param);
+
+void you_win(void)
+{
+	ft_putstr_fd("Congratulations, you won!!! :)\nPress ESC to exit the game.\n",STDOUT_FILENO);
+}
 
 void	merge_image(t_img *background, t_img *foreground, int row, int col)
 {
@@ -58,16 +60,39 @@ void	merge_image(t_img *background, t_img *foreground, int row, int col)
 
 int destroy_display(void *param)
 {
-	screens	*screen;
+	characters	*character;
 
-	screen = param;
-	mlx_loop_end(screen->display);
-	mlx_destroy_window(screen->display, screen->window);
+	character = param;
+	mlx_destroy_window(character->screen->display, character->screen->window);
+	mlx_loop_end(character->screen->display);
 }
 
 int	is_water(maps *map, int x, int y)
 {
-	return (map->content[map->width * y / GRID + x / GRID] == '1');
+	return (map->content[map->width * y / GRID + x / GRID]->map_item == '1');
+}
+
+
+void is_collectible(maps *map, int x, int y)
+{
+	if(map->content[map->width * y / GRID + x / GRID]->map_item == 'C')
+	{
+		map->content[map->width * y / GRID + x / GRID]->map_item = '0';
+		map->collectible_count--;
+
+	}
+}
+
+void	increase_movement(characters *character)
+{
+	character->movement_count++;
+	ft_putnbr_fd(character->movement_count, STDOUT_FILENO);
+	ft_putstr_fd("\n", STDOUT_FILENO);
+}
+
+int exit_game(maps *map, int x, int y)
+{
+	return (map->collectible_count > 0 && map->content[map->width * y / GRID + x / GRID]->map_item == 'E');
 }
 
 int	move_right(void *param)
@@ -75,24 +100,37 @@ int	move_right(void *param)
 	characters	*character;
 
 	character = param;
-	if (is_water(character->map, character->col + GRID, character->row))
+	if (is_water(character->map, character->col + GRID, character->row) || exit_game(character->map, character->col + GRID, character->row))
 		return (0);
+	is_collectible(character->map, character->col + GRID, character->row);
 	mlx_put_image_to_window(character->screen->display, character->screen->window, character->background->background, character->col, character->row);
 	character->col += GRID;
 	character->current = character->right;
 	mlx_put_image_to_window(character->screen->display, character->screen->window, character->current, character->col, character->row);
+	increase_movement(character);
+	if (character->map->content[character->map->width * character->row / GRID + character->col / GRID]->map_item == 'E')
+	{
+		you_win();
+	}
+	
 }
 int	move_left(void *param)
 {
 	characters	*character;
 
 	character = param;
-	if (is_water(character->map, character->col - GRID, character->row))
+	if (is_water(character->map, character->col - GRID, character->row) || exit_game(character->map, character->col - GRID, character->row))
 		return (0);
+	is_collectible(character->map, character->col - GRID, character->row);
 	mlx_put_image_to_window(character->screen->display, character->screen->window, character->background->background, character->col, character->row);
 	character->col -= GRID;
 	character->current = character->left;
 	mlx_put_image_to_window(character->screen->display, character->screen->window, character->current, character->col, character->row);
+	increase_movement(character);
+	if (character->map->content[character->map->width * character->row / GRID + character->col / GRID]->map_item == 'E')
+	{
+		you_win();
+	}
 }
 
 int	move_up(void *param)
@@ -100,11 +138,17 @@ int	move_up(void *param)
 	characters	*character;
 
 	character = param;
-	if (is_water(character->map, character->col, character->row - GRID))
+	if (is_water(character->map, character->col, character->row - GRID) || exit_game(character->map, character->col , character->row - GRID))
 		return (0);
+	is_collectible(character->map, character->col, character->row - GRID);
 	mlx_put_image_to_window(character->screen->display, character->screen->window, character->background->background, character->col, character->row);
 	character->row -= GRID;
 	mlx_put_image_to_window(character->screen->display, character->screen->window, character->current, character->col, character->row);
+	increase_movement(character);
+	if (character->map->content[character->map->width * character->row / GRID + character->col / GRID]->map_item == 'E')
+	{
+		you_win();
+	}
 }
 
 int	move_down(void *param)
@@ -112,11 +156,17 @@ int	move_down(void *param)
 	characters	*character;
 
 	character = param;
-	if (is_water(character->map, character->col, character->row + GRID))
+	if (is_water(character->map, character->col, character->row + GRID) || exit_game(character->map, character->col , character->row + GRID))
 		return (0);
+	is_collectible(character->map, character->col, character->row + GRID);
 	mlx_put_image_to_window(character->screen->display, character->screen->window, character->background->background, character->col, character->row);
 	character->row += GRID;
 	mlx_put_image_to_window(character->screen->display, character->screen->window, character->current, character->col, character->row);
+	increase_movement(character);
+	if (character->map->content[character->map->width * character->row / GRID + character->col / GRID]->map_item == 'E')
+	{
+		you_win();
+	}
 }
 
 int	key_delegator(int key_code, void *param)
@@ -146,71 +196,37 @@ int	key_delegator(int key_code, void *param)
 	return (functions[key_code](param));
 }
 
-maps	*read_map(char *file)
-{
-	int	file_descriptor;
-	maps	*map;
-	char	*content;
-	char	*line;
-	int	height;
-	int	width;
-	size_t	size;
-
-	content = "";
-	file_descriptor = open(file, O_RDONLY);
-	if (file_descriptor < 0)
-		return (NULL);
-	line = "";
-	height = 0;
-	width = 0;
-	while (line != NULL)
-	{
-		size = len(line);
-		if (size > 0 && line[size - 1] == '\n')
-			size--;
-		content = join(content, line, len(content) + size + 1);
-		line = get_next_line(file_descriptor);
-		if (width == 0)
-			width = (int) size;
-		if (line != NULL && size == width)
-			height++;
-	}
-	map = malloc(sizeof(*map));
-	if (map == NULL)
-		return (NULL);
-	map->content = content;
-	map->height = height;
-	map->width = width;
-	return (map);
-}
-
 int	fill_map(screens *screen, maps *map, characters *character, t_img *grass, t_img *water, t_img *wool, t_img *hole)
 {
 	int	row;
 	int	col;
-	char	cell;
+	nodes	*node;
 	int	pixels_x;
 	int	pixels_y;
 
+	map->collectible_count = 0;
 	row = 0;
 	while (row < map->height)
 	{
 		col = 0;
 		while (col < map->width)
 		{
-			cell = map->content[row * map->width + col];
+			node = map->content[row * map->width + col];
 			pixels_x = col * GRID;
 			pixels_y = row * GRID;
-			if (cell == '1')
+			if (node->map_item == '1')
 				mlx_put_image_to_window(screen->display, screen->window, water, pixels_x, pixels_y);
 			else
 				mlx_put_image_to_window(screen->display, screen->window, grass, pixels_x, pixels_y);
 			
-			if(cell == 'C')
+			if(node->map_item == 'C')
+			{
 				mlx_put_image_to_window(screen->display, screen->window, wool, pixels_x, pixels_y);
-			if(cell == 'E')
+				map->collectible_count += 1;
+			}
+			if(node->map_item == 'E')
 				mlx_put_image_to_window(screen->display, screen->window, hole, pixels_x, pixels_y);
-			if (cell == 'P')
+			if (node->map_item == 'P')
 			{
 				character->col = pixels_x;
 				character->row = pixels_y;
@@ -222,7 +238,7 @@ int	fill_map(screens *screen, maps *map, characters *character, t_img *grass, t_
 	}
 }
 
-int	main(void)
+int	main(int argc, char **argv)
 {
 	t_xvar* display;
 	void* window;
@@ -238,7 +254,18 @@ int	main(void)
 	int	start_col;
 	maps	*map;
 
-	map = read_map("maps/test_map.ber");
+	if (argc != 2)
+	{
+		ft_putstr_fd("Error\nInvalid number of arguments. Program takes only the map file name as parameter.\n", STDERR_FILENO);
+		exit(1);
+	}
+	if (ft_strncmp(argv[1] + len(argv[1]) - 4, ".ber", 5) != 0)
+	{
+		ft_putstr_fd("Error\nMap file name must end with '*.ber' extension.\n", STDERR_FILENO);
+		exit(1);
+	}
+	map = read_map(argv[1]);
+	validate_map(map);
 	screen.height = map->height * GRID;
 	screen.width = map->width * GRID;
 	display = mlx_init();
@@ -260,11 +287,12 @@ int	main(void)
 	character.background = &background;
 	character.screen = &screen;
 	character.map = map;
+	character.movement_count = 0;
 
 	fill_map(&screen, map, &character, background.background, water, wool, hole);
 	mlx_key_hook(window, &key_delegator, &character);
+	mlx_hook(window, DestroyNotify, 0, &destroy_display, &character);
 	mlx_loop(display);
 	mlx_destroy_display(display);
-
 	return(0);
 }

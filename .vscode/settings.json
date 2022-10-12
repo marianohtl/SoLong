@@ -1,0 +1,19 @@
+{
+    "C_Cpp.errorSquiggles": "Disabled",
+    "files.associations": {
+        "*.c": "c",
+        "unordered_map": "c",
+        "mlx_int.h": "c",
+        "mlx.h": "c",
+        "keysymdef.h": "c",
+        "xlib.h": "c",
+        "ipc.h": "c",
+        "xutil.h": "c",
+        "keysym.h": "c",
+        "get_next_line.h": "c",
+        "algorithm": "c",
+        "validation.h": "c",
+        "search.h": "c",
+        "type_traits": "c"
+    }
+}

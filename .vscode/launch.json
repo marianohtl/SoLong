@@ -9,13 +9,17 @@
 			"type": "cppdbg",
 			"request": "launch",
 			"program": "${workspaceFolder}/a.out",
-			"args": [],
+			"args": ["maps/valid_map.ber"],
 			"stopAtEntry": false,
 			"cwd": "${workspaceFolder}",
 			"environment": [
 				{
 					"name": "DISPLAY",
 					"value": "192.168.15.12:0.0"
+				},
+				{
+					"name": "LIBGL_ALWAYS_INDIRECT",
+					"value": "1"
 				}
 			],
 			"externalConsole": false,

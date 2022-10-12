@@ -1,5 +1,10 @@
-#include "maps.h"
+#include "constants.h"
+#include "structs.h"
+#include "get_next_line.h"
+#include "utils.h"
 #include "validation.h"
+#include <unistd.h>
+#include <stdlib.h>
 #include <fcntl.h>
 
 
@@ -13,6 +18,35 @@ nodes	*new_node(int x, int y, char element)
 	node->map_item = element;
 	node->visited = 0;
 	return (node);
+}
+
+int	validate(char *line, int width, int height)
+{
+	size_t	size;
+
+	size = len(line);
+	if (size > 0 && line[size - 1] == '\n')
+			size--;
+	if (!valid_content(line))
+	{
+		ft_putstr_fd("Error\nMap has invalid content.\n", STDERR_FILENO);
+		exit(1);
+	}
+	if (size > MAX_WIDTH)
+	{
+		ft_putstr_fd("Error\nMap has invalid width. Max width is 38 characters.\n", STDERR_FILENO);
+		exit(1);
+	}
+	if (height > MAX_HEIGHT)
+	{
+		ft_putstr_fd("Error\nMap has invalid height. Max height is 19 lines.\n", STDERR_FILENO);
+		exit(1);
+	}
+	if (size != width)
+	{
+		ft_putstr_fd("Error\nMap must be rectangular.\n", STDERR_FILENO);
+		exit(1);
+	}
 }
 
 maps	*read_map(const char *file)
@@ -35,16 +69,19 @@ maps	*read_map(const char *file)
 	line = "";
 	height = 0;
 	width = 0;
+	size = 0;
 	while (line != NULL)
 	{
+		content = join(content, line, len(content) + size + 1);
+		line = get_next_line(file_descriptor);
 		size = len(line);
 		if (size > 0 && line[size - 1] == '\n')
 			size--;
-		content = join(content, line, len(content) + size + 1);
-		line = get_next_line(file_descriptor);
 		if (width == 0)
 			width = (int) size;
-		if (line != NULL && size == width)
+		if (line != NULL)
+			validate(line, width, 0);
+		if (size > 0)
 			height++;
 	}
 	map = malloc(sizeof(*map));

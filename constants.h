@@ -8,9 +8,9 @@
 # define WATER "./images/xpm/water.xpm"
 # define WOOL "./images/xpm/wool.xpm"
 # define HOLE "./images/xpm/hole.xpm"
-# define RIGHT_CAT "./images/xpm/right_cat.xpm"
-# define ESCAPE_CAT "./images/xpm/right_cat.xpm"
-# define LEFT_CAT "./images/xpm/left_cat.xpm"
+# define R_CAT "./images/xpm/right_cat.xpm"
+# define E_CAT "./images/xpm/right_cat.xpm"
+# define L_CAT "./images/xpm/left_cat.xpm"
 
 typedef int	(*t_key_function)(void *param);
 

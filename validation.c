@@ -23,8 +23,8 @@ void	validate_collectible(t_maps *map, t_nodes *start, int x, int y)
 		clean_map_visit(map);
 		node = search(map, start, node);
 		if (node == NULL)
-			map_error(map, "Map must have a valid path to each" \
-				"collectible.\n", &free_map);
+			map_error(map, map->width * map->height + 1, \
+				"Map must have a valid path to each collectible.\n", &free_map);
 	}
 }
 
@@ -49,7 +49,8 @@ void	validate_collectibles(t_maps *map, t_nodes *start)
 		y++;
 	}
 	if (!has_collectible)
-		map_error(map, "Map must have at least one collectible.\n", &free_map);
+		map_error(map, map->width * map->height + 1, \
+			"Map must have at least one collectible.\n", &free_map);
 }
 
 void	validate_start_and_exit(t_maps *map, t_nodes **start, t_nodes **target)
@@ -67,10 +68,12 @@ void	validate_start_and_exit(t_maps *map, t_nodes **start, t_nodes **target)
 			node = map->content[x + y * map->width];
 			if ((y == 0 || x == 0 || y == map->height - 1 || \
 				x == map->width - 1) && node->map_item != '1')
-				map_error(map, "Map must be surrounded by walls.\n", &free_map);
+				map_error(map, map->width * map->height + 1, \
+					"Map must be surrounded by walls.\n", &free_map);
 			if ((*start != NULL && node->map_item == 'P') || \
 				(*target != NULL && node->map_item == 'E'))
-				map_error(map, "Map has multiple start or exits.\n", &free_map);
+				map_error(map, map->width * map->height + 1, \
+					"Map has multiple start or exits.\n", &free_map);
 			if (node->map_item == 'P')
 				*start = node;
 			else if (node->map_item == 'E')
@@ -91,11 +94,14 @@ void	validate_map(t_maps *map)
 	target = NULL;
 	validate_start_and_exit(map, &start, &target);
 	if (start == NULL)
-		map_error(map, "Map must have one starting position.\n", &free_map);
+		map_error(map, map->width * map->height + 1, \
+			"Map must have one starting position.\n", &free_map);
 	if (target == NULL)
-		map_error(map, "Map must have one exit.\n", &free_map);
+		map_error(map, map->width * map->height + 1, \
+			"Map must have one exit.\n", &free_map);
 	node = search(map, start, target);
 	if (node == NULL)
-		map_error(map, "Map must have a valid path to exit.\n", &free_map);
+		map_error(map, map->width * map->height + 1, \
+			"Map must have a valid path to exit.\n", &free_map);
 	validate_collectibles(map, start);
 }

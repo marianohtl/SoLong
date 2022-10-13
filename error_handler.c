@@ -4,9 +4,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-void	map_error(t_maps *map, char *message, void (*free_map)(t_maps *))
+void	map_error(t_maps *map, int limit, char *message, \
+	void (*free_map)(t_maps *, int))
 {
-	free_map(map);
+	free_map(map, limit);
 	ft_putstr_fd("Error\n", STDERR_FILENO);
 	ft_putstr_fd(message, STDERR_FILENO);
 	exit(1);

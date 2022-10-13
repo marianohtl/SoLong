@@ -13,13 +13,18 @@ void	update_state(t_characters *character, int offset_x, int offset_y)
 	t_nodes	*node;
 
 	node = get_node(character->map, character->col, character->row);
-	node->map_item = '0';
+	if (node->map_item == 'F')
+		node->map_item = 'E';
+	else
+		node->map_item = '0';
 	character->col += offset_x;
 	character->row += offset_y;
 	node = get_node(character->map, character->col, character->row);
 	if (node->map_item == 'C')
 		character->map->collectible_count--;
-	if (node->map_item != 'E')
+	if (node->map_item == 'E')
+		node->map_item = 'F';
+	else
 		node->map_item = 'P';
 }
 
@@ -28,8 +33,7 @@ int	is_blocked(t_maps *map, int x, int y)
 	t_nodes	*node;
 
 	node = get_node(map, x, y);
-	return (node->map_item == '1' || \
-		(map->collectible_count > 0 && node->map_item == 'E'));
+	return (node->map_item == '1');
 }
 
 void	increase_movement(t_characters *character)

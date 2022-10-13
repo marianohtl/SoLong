@@ -1,6 +1,7 @@
 #include "constants.h"
 #include "structs.h"
 #include "get_next_line.h"
+#include "error_handler.h"
 #include "utils.h"
 #include "maps_utils.h"
 #include "mlx.h"
@@ -26,10 +27,11 @@ void	clean_map_visit(t_maps *map)
 	}
 }
 
-void	free_map(t_maps *map)
+void	free_map(t_maps *map, int limit)
 {
 	int	x;
 	int	y;
+	int	coord;
 
 	y = 0;
 	while (y < map->height)
@@ -37,7 +39,9 @@ void	free_map(t_maps *map)
 		x = 0;
 		while (x < map->width)
 		{
-			free(map->content[y * map->width + x]);
+			coord = y * map->width + x;
+			if (coord < limit)
+				free(map->content[coord]);
 			x++;
 		}
 		y++;
@@ -51,6 +55,7 @@ t_maps	*read_map(const char *file)
 	int			file_descriptor;
 	t_maps		*map;
 	char		*content;
+
 	t_map_size	map_size;
 
 	file_descriptor = open(file, O_RDONLY);
@@ -59,7 +64,12 @@ t_maps	*read_map(const char *file)
 	map_size.height = 0;
 	map_size.width = 0;
 	content = read_all_file(file_descriptor, &map_size);
+	if (content == NULL)
+		quit_program("Map with invalid format.\n");
+	close(file_descriptor);
 	map = create_map(map_size.height, map_size.width, content);
+	if (map == NULL)
+		system_error("Error\nFailed to create map");
 	free(content);
 	return (map);
 }
@@ -71,7 +81,7 @@ void	fill_node(t_nodes *node, t_characters *character, int x, int y)
 			character->screen->window, character->water, x, y);
 	else if (node->map_item == '0')
 		mlx_put_image_to_window(character->screen->display, \
-			character->screen->window, character->background, x, y);
+			character->screen->window, character->sand, x, y);
 	else if (node->map_item == 'C')
 	{
 		mlx_put_image_to_window(character->screen->display, \
@@ -88,7 +98,7 @@ void	fill_node(t_nodes *node, t_characters *character, int x, int y)
 		mlx_put_image_to_window(character->screen->display, \
 			character->screen->window, character->current, x, y);
 	}
-	else if (node->map_item == 'D')
+	else if (node->map_item == 'D' || node->map_item == 'F')
 		mlx_put_image_to_window(character->screen->display, \
 			character->screen->window, character->escape, x, y);
 }

@@ -3,6 +3,8 @@
 #include "get_next_line.h"
 #include "utils.h"
 #include "validation.h"
+#include "maps.h"
+#include "error_handler.h"
 #include <stdlib.h>
 #include <fcntl.h>
 
@@ -11,6 +13,8 @@ t_nodes	*new_node(int x, int y, char element)
 	t_nodes	*node;
 
 	node = malloc(sizeof(*node));
+	if (node == NULL)
+		return (NULL);
 	node->x = x;
 	node->y = y;
 	node->map_item = element;
@@ -47,29 +51,37 @@ void	validate(int fd, char *content, char *line, t_map_size *map_size)
 	if (map_size->height > MAX_HEIGHT)
 		file_error("Map has invalid height. Max height is 19 lines.\n", fd, \
 			content, line);
-	if (length != map_size->width)
+	if (length < 1 || length != map_size->width)
 		file_error("Map must be rectangular.\n", fd, content, line);
 }
 
 t_maps	*create_map(int height, int width, char *content)
 {
 	t_maps	*map;
+	t_nodes	*node;
 	int		x;
 	int		y;
-	int		coord;
 
 	map = malloc(sizeof(*map));
 	if (map == NULL)
 		return (NULL);
 	map->content = malloc(sizeof(*(map->content)) * height * width);
+	if (map->content == NULL)
+	{
+		free(map);
+		return (NULL);
+	}
 	y = 0;
 	while (y < height)
 	{
 		x = 0;
 		while (x < width)
 		{
-			coord = x + y * width;
-			map->content[coord] = new_node(x, y, content[coord]);
+			node = new_node(x, y, content[x + y * width]);
+			if (node == NULL)
+				map_error(map, x + y * width, "Failed to allocate all nodes", \
+					&free_map);
+			map->content[x + y * width] = node;
 			x++;
 		}
 		y++;
@@ -97,8 +109,7 @@ char	*read_all_file(int file_descriptor, t_map_size *map_size)
 			map_size->width = (int) length;
 		if (length > 0)
 			(map_size->height)++;
-		if (line != NULL)
-			validate(file_descriptor, content, line, map_size);
+		validate(file_descriptor, content, line, map_size);
 		content = join(content, line, len(content) + length + 1);
 		free(line);
 		free(temp);

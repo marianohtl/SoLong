@@ -45,7 +45,7 @@ typedef struct s_characters
 	t_img		*hole;
 	t_img		*wool;
 	t_img		*escape;
-	t_img		*background;
+	t_img		*sand;
 	int			row;
 	int			col;
 	int			movement_count;

@@ -11,20 +11,7 @@
 
 int	destroy_display(void *param)
 {
-	t_characters	*character;
-
-	character = param;
-	mlx_destroy_window(character->screen->display, character->screen->window);
-	mlx_destroy_image(character->screen->display, character->background);
-	mlx_destroy_image(character->screen->display, character->escape);
-	mlx_destroy_image(character->screen->display, character->right);
-	mlx_destroy_image(character->screen->display, character->left);
-	mlx_destroy_image(character->screen->display, character->water);
-	mlx_destroy_image(character->screen->display, character->wool);
-	mlx_destroy_image(character->screen->display, character->hole);
-	mlx_destroy_display(character->screen->display);
-	free_map(character->map);
-	free(character->screen->display);
+	free_resources(param);
 	exit(0);
 }
 
@@ -79,6 +66,11 @@ int	main(int argc, char **argv)
 		system_error("Error\nFailed to open map");
 	validate_map(map);
 	initialize_screen(&screen, map);
+	if (screen.display == NULL || screen.window == NULL)
+	{
+		free_map(map, map->height * map->width + 1);
+		quit_program("Failed to create a window on display.\n");
+	}
 	initialize_character(&character, map, &screen);
 	fill_map(map, &character);
 	mlx_key_hook(screen.window, &key_delegator, &character);

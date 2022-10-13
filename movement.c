@@ -19,7 +19,7 @@ static int	move(t_characters *character, int offset_x, int offset_y)
 	update_state(character, offset_x, offset_y);
 	node = get_node(character->map, character->col, character->row);
 	increase_movement(character);
-	if (node->map_item == 'E')
+	if (character->map->collectible_count == 0 && node->map_item == 'F')
 	{
 		you_win(node);
 		return (0);

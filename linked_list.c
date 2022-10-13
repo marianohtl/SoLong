@@ -11,35 +11,21 @@ linked_list	*new_linked_list_element(void *content)
 	return (element);
 }
 
-void	delete_element(linked_list **head, linked_list *element)
+void	free_linked_list(linked_list **head)
 {
 	linked_list	*previous;
 	linked_list	*current;
 
-	previous = NULL;
+	if (*head == NULL)
+		return ;
 	current = *head;
+	previous = NULL;
 	while (current->next != NULL)
 	{
-		if (current == element)
-		{
-			if (previous == NULL)
-			{
-				*head = current->next;
-				return ;
-			}
-			previous->next = current->next;
-			return ;
-		}
+		previous = current;
 		current = current->next;
+		free(previous);
 	}
-	if (current == element)
-	{
-		if (previous == NULL)
-		{
-			*head = current->next;
-			return ;
-		}
-		previous->next = current->next;
-		return ;
-	}
+	free(current);
+	*head = NULL;
 }

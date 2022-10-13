@@ -29,6 +29,7 @@ nodes	*find_minimum_evaluation(linked_list **head, linked_list **last)
 	linked_list	*element;
 	linked_list	*previous;
 	linked_list	*temp;
+	nodes		*result;
 
 	if (*head == NULL)
 		return (NULL);
@@ -53,7 +54,9 @@ nodes	*find_minimum_evaluation(linked_list **head, linked_list **last)
 	if (minimum == *last)
 		*last = previous;
 	previous->next = minimum->next;
-	return (minimum->content);
+	result = minimum->content;
+	free(minimum);
+	return (result);
 }
 
 void evaluate_node(maps *map, nodes *target, nodes *current, linked_list **to_visit, linked_list **last, int x, int y)
@@ -98,5 +101,6 @@ nodes	*search(maps *map, nodes *start, nodes *target)
 			return (NULL);
 		current->visited = 1;
 	}
+	free_linked_list(&to_visit);
 	return (current);
 }

@@ -54,6 +54,7 @@ maps	*read_map(const char *file)
 	int	file_descriptor;
 	maps	*map;
 	char	*content;
+	char	*temp;
 	char	*line;
 	int	height;
 	int	width;
@@ -62,7 +63,7 @@ maps	*read_map(const char *file)
 	int	coord;
 	size_t	size;
 
-	content = "";
+	content = NULL;
 	file_descriptor = open(file, O_RDONLY);
 	if (file_descriptor < 0)
 		return (NULL);
@@ -72,7 +73,13 @@ maps	*read_map(const char *file)
 	size = 0;
 	while (line != NULL)
 	{
+		temp = content;
+		if (content == NULL)
+			content = "";
 		content = join(content, line, len(content) + size + 1);
+		if (*line != '\0')
+			free(line);
+		free(temp);
 		line = get_next_line(file_descriptor);
 		size = len(line);
 		if (size > 0 && line[size - 1] == '\n')
@@ -100,6 +107,7 @@ maps	*read_map(const char *file)
 		}
 		y++;
 	}
+	free(content);
 	map->height = height;
 	map->width = width;
 	return (map);

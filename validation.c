@@ -77,7 +77,8 @@ void	validate_map(maps *map)
 		}
 		y++;
 	}
-	if (search(map, start, target) == NULL)
+	node = search(map, start, target);
+	if (node == NULL)
 	{
 		ft_putstr_fd("Error\nMap must have a valid path to exit.\n", STDERR_FILENO);
 		exit(1);
@@ -94,11 +95,12 @@ void	validate_map(maps *map)
 			{
 				clean_map_visit(map);
 				target = node;
-			}
-			if (node->map_item == 'C' && search(map, start, node) == NULL)
-			{
-				ft_putstr_fd("Error\nMap must have a valid path to each collectible.\n", STDERR_FILENO);
-				exit(1);
+				node = search(map, start, target);
+				if (node == NULL)
+				{
+					ft_putstr_fd("Error\nMap must have a valid path to each collectible.\n", STDERR_FILENO);
+					exit(1);
+				}
 			}
 			x++;
 		}

@@ -26,6 +26,9 @@ typedef struct characters
 	t_img *right;
 	t_img *left;
 	t_img *current;
+	t_img *water;
+	t_img *hole;
+	t_img *wool;
 	backgrounds *background;
 	int row;
 	int col;
@@ -37,6 +40,26 @@ typedef int (*key_function)(void *param);
 void you_win(void)
 {
 	ft_putstr_fd("Congratulations, you won!!! :)\nPress ESC to exit the game.\n",STDOUT_FILENO);
+}
+
+void	free_map(maps *map)
+{
+	int	x;
+	int	y;
+
+	y = 0;
+	while (y < map->height)
+	{
+		x = 0;
+		while (x < map->width)
+		{
+			free(map->content[y * map->width + x]);
+			x++;
+		}
+		y++;
+	}
+	free(map->content);
+	free(map);
 }
 
 void	merge_image(t_img *background, t_img *foreground, int row, int col)
@@ -64,7 +87,16 @@ int destroy_display(void *param)
 
 	character = param;
 	mlx_destroy_window(character->screen->display, character->screen->window);
-	mlx_loop_end(character->screen->display);
+	mlx_destroy_image(character->screen->display, character->background->background);
+	mlx_destroy_image(character->screen->display, character->right);
+	mlx_destroy_image(character->screen->display, character->left);
+	mlx_destroy_image(character->screen->display, character->water);
+	mlx_destroy_image(character->screen->display, character->wool);
+	mlx_destroy_image(character->screen->display, character->hole);
+	mlx_destroy_display(character->screen->display);
+	free_map(character->map);
+	free(character->screen->display);
+	exit(0);
 }
 
 int	is_water(maps *map, int x, int y)
@@ -238,9 +270,17 @@ int	fill_map(screens *screen, maps *map, characters *character, t_img *grass, t_
 	}
 }
 
+int	update_window(void *param)
+{
+	characters	*character;
+
+	character = param;
+	fill_map(character->screen, character->map, character, character->background->background, character->water, character->wool, character->hole);
+}
+
 int	main(int argc, char **argv)
 {
-	t_xvar* display;
+	void* display;
 	void* window;
 	screens screen;
 	characters character;
@@ -288,11 +328,14 @@ int	main(int argc, char **argv)
 	character.screen = &screen;
 	character.map = map;
 	character.movement_count = 0;
+	character.water = water;
+	character.wool = wool;
+	character.hole = hole;
 
 	fill_map(&screen, map, &character, background.background, water, wool, hole);
 	mlx_key_hook(window, &key_delegator, &character);
 	mlx_hook(window, DestroyNotify, 0, &destroy_display, &character);
+	mlx_loop_hook(display, &update_window, &character);
 	mlx_loop(display);
-	mlx_destroy_display(display);
 	return(0);
 }

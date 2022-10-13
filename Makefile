@@ -3,6 +3,7 @@ CFLAGS := -g3
 INCLUDES := -I minilibx-linux -I gnl
 LIBRARIES := -L minilibx-linux -lmlx -lXext -lX11
 GNL := gnl/get_next_line.o gnl/get_next_line_utils.o
+VALGRIND_FLAGS := --leak-check=full --show-leak-kinds=all --track-origins=yes --log-file=valgrind.log
 
 SOURCES := linked_list.c \
 	main.c \
@@ -27,3 +28,6 @@ foo: test.out
 
 test.out: test_validation.c search.c maps.c validation.c linked_list.c $(GNL)
 	$(CC) $(CFLAGS) $(INCLUDES) $^ -o $@
+
+run_valgrind: a.out
+	valgrind $(VALGRIND_FLAGS) ./$< maps/valid_map.ber

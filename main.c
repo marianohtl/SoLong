@@ -141,6 +141,8 @@ int	move_right(void *param)
 	characters	*character;
 
 	character = param;
+	if (character->map->content[character->map->width * character->row / GRID + character->col / GRID]->map_item == 'D')
+		return (0);
 	if (is_water(character->map, character->col + GRID, character->row) || exit_game(character->map, character->col + GRID, character->row))
 		return (0);
 	is_collectible(character->map, character->col + GRID, character->row);
@@ -161,6 +163,8 @@ int	move_left(void *param)
 	characters	*character;
 
 	character = param;
+	if (character->map->content[character->map->width * character->row / GRID + character->col / GRID]->map_item == 'D')
+		return (0);
 	if (is_water(character->map, character->col - GRID, character->row) || exit_game(character->map, character->col - GRID, character->row))
 		return (0);
 	is_collectible(character->map, character->col - GRID, character->row);
@@ -181,6 +185,8 @@ int	move_up(void *param)
 	characters	*character;
 
 	character = param;
+	if (character->map->content[character->map->width * character->row / GRID + character->col / GRID]->map_item == 'D')
+		return (0);
 	if (is_water(character->map, character->col, character->row - GRID) || exit_game(character->map, character->col , character->row - GRID))
 		return (0);
 	is_collectible(character->map, character->col, character->row - GRID);
@@ -200,6 +206,8 @@ int	move_down(void *param)
 	characters	*character;
 
 	character = param;
+	if (character->map->content[character->map->width * character->row / GRID + character->col / GRID]->map_item == 'D')
+		return (0);
 	if (is_water(character->map, character->col, character->row + GRID) || exit_game(character->map, character->col , character->row + GRID))
 		return (0);
 	is_collectible(character->map, character->col, character->row + GRID);

@@ -30,4 +30,5 @@ test.out: test_validation.c search.c maps.c validation.c linked_list.c $(GNL)
 	$(CC) $(CFLAGS) $(INCLUDES) $^ -o $@
 
 run_valgrind: a.out
-	valgrind $(VALGRIND_FLAGS) ./$< maps/valid_map.ber
+	valgrind $(VALGRIND_FLAGS) ./$< maps/max_map.ber
+	# valgrind $(VALGRIND_FLAGS) ./$< maps/valid_map.ber

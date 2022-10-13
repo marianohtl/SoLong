@@ -20,7 +20,28 @@ nodes	*new_node(int x, int y, char element)
 	return (node);
 }
 
-int	validate(char *line, int width, int height)
+
+void	free_map(maps *map)
+{
+	int	x;
+	int	y;
+
+	y = 0;
+	while (y < map->height)
+	{
+		x = 0;
+		while (x < map->width)
+		{
+			free(map->content[y * map->width + x]);
+			x++;
+		}
+		y++;
+	}
+	free(map->content);
+	free(map);
+}
+
+int	validate(int fd, char *content, char *line, int width, int height)
 {
 	size_t	size;
 
@@ -30,21 +51,49 @@ int	validate(char *line, int width, int height)
 	if (!valid_content(line))
 	{
 		ft_putstr_fd("Error\nMap has invalid content.\n", STDERR_FILENO);
+		free(content);
+		while (line != NULL)
+		{
+			free(line);
+			line = get_next_line(fd);
+		}
+		close(fd);
 		exit(1);
 	}
 	if (size > MAX_WIDTH)
 	{
 		ft_putstr_fd("Error\nMap has invalid width. Max width is 38 characters.\n", STDERR_FILENO);
+		free(content);
+		while (line != NULL)
+		{
+			free(line);
+			line = get_next_line(fd);
+		}
+		close(fd);
 		exit(1);
 	}
 	if (height > MAX_HEIGHT)
 	{
 		ft_putstr_fd("Error\nMap has invalid height. Max height is 19 lines.\n", STDERR_FILENO);
+		free(content);
+		while (line != NULL)
+		{
+			free(line);
+			line = get_next_line(fd);
+		}
+		close(fd);
 		exit(1);
 	}
 	if (size != width)
 	{
 		ft_putstr_fd("Error\nMap must be rectangular.\n", STDERR_FILENO);
+		free(content);
+		while (line != NULL)
+		{
+			free(line);
+			line = get_next_line(fd);
+		}
+		close(fd);
 		exit(1);
 	}
 }
@@ -87,7 +136,7 @@ maps	*read_map(const char *file)
 		if (width == 0)
 			width = (int) size;
 		if (line != NULL)
-			validate(line, width, 0);
+			validate(file_descriptor, content, line, width, 0);
 		if (size > 0)
 			height++;
 	}

@@ -43,26 +43,6 @@ void you_win(void)
 	ft_putstr_fd("Congratulations, you won!!! :)\nPress ESC to exit the game.\n",STDOUT_FILENO);
 }
 
-void	free_map(maps *map)
-{
-	int	x;
-	int	y;
-
-	y = 0;
-	while (y < map->height)
-	{
-		x = 0;
-		while (x < map->width)
-		{
-			free(map->content[y * map->width + x]);
-			x++;
-		}
-		y++;
-	}
-	free(map->content);
-	free(map);
-}
-
 void	merge_image(t_img *background, t_img *foreground, int row, int col)
 {
 	int	*buffer_background;
@@ -312,6 +292,7 @@ int	main(int argc, char **argv)
 	int	start_row;
 	int	start_col;
 	maps	*map;
+	char	*error;
 
 	if (argc != 2)
 	{
@@ -324,6 +305,11 @@ int	main(int argc, char **argv)
 		exit(1);
 	}
 	map = read_map(argv[1]);
+	if (map == NULL)
+	{
+		perror("Error\nFailed to open map");
+		exit(1);
+	}
 	validate_map(map);
 	screen.height = map->height * GRID;
 	screen.width = map->width * GRID;

@@ -284,6 +284,8 @@ int	fill_map(screens *screen, maps *map, characters *character, t_img *grass, t_
 				character->row = pixels_y;
 				mlx_put_image_to_window(screen->display, screen->window, character->current, pixels_x, pixels_y);
 			}
+			else if (node->map_item == 'D')
+				mlx_put_image_to_window(screen->display, screen->window, character->escape, pixels_x, pixels_y);
 			col++;
 		}
 		row++;

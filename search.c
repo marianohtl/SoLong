@@ -49,7 +49,9 @@ nodes	*find_minimum_evaluation(linked_list **head, linked_list **last)
 	if (previous == NULL)
 	{
 		*head = minimum->next;
-		return (minimum->content);
+		result = minimum->content;
+		free(minimum);
+		return (result);
 	}
 	if (minimum == *last)
 		*last = previous;

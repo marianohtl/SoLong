@@ -87,6 +87,7 @@ int destroy_display(void *param)
 	character = param;
 	mlx_destroy_window(character->screen->display, character->screen->window);
 	mlx_destroy_image(character->screen->display, character->background->background);
+	mlx_destroy_image(character->screen->display, character->escape);
 	mlx_destroy_image(character->screen->display, character->right);
 	mlx_destroy_image(character->screen->display, character->left);
 	mlx_destroy_image(character->screen->display, character->water);
@@ -152,7 +153,6 @@ int	move_right(void *param)
 	increase_movement(character);
 	if (character->map->content[character->map->width * character->row / GRID + character->col / GRID]->map_item == 'E')
 	{
-		mlx_put_image_to_window(character->screen->display, character->screen->window, character->escape, character->col, character->row);
 		character->map->content[character->map->width * character->row / GRID + character->col / GRID]->map_item = 'D';
 		you_win();
 	}
@@ -174,7 +174,6 @@ int	move_left(void *param)
 	increase_movement(character);
 	if (character->map->content[character->map->width * character->row / GRID + character->col / GRID]->map_item == 'E')
 	{
-		mlx_put_image_to_window(character->screen->display, character->screen->window, character->escape, character->col, character->row);
 		character->map->content[character->map->width * character->row / GRID + character->col / GRID]->map_item = 'D';
 		you_win();
 	}
@@ -195,7 +194,6 @@ int	move_up(void *param)
 	increase_movement(character);
 	if (character->map->content[character->map->width * character->row / GRID + character->col / GRID]->map_item == 'E')
 	{
-		mlx_put_image_to_window(character->screen->display, character->screen->window, character->escape, character->col, character->row);
 		character->map->content[character->map->width * character->row / GRID + character->col / GRID]->map_item = 'D';
 		you_win();
 	}
@@ -216,7 +214,6 @@ int	move_down(void *param)
 	increase_movement(character);
 	if (character->map->content[character->map->width * character->row / GRID + character->col / GRID]->map_item == 'E')
 	{
-		mlx_put_image_to_window(character->screen->display, character->screen->window, character->escape, character->col, character->row);
 		character->map->content[character->map->width * character->row / GRID + character->col / GRID]->map_item = 'D';
 		you_win();
 	}

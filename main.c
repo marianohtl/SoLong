@@ -29,6 +29,7 @@ typedef struct characters
 	t_img *water;
 	t_img *hole;
 	t_img *wool;
+	t_img *escape;
 	backgrounds *background;
 	int row;
 	int col;
@@ -74,9 +75,7 @@ void	merge_image(t_img *background, t_img *foreground, int row, int col)
 	while (pixel < foreground->width * foreground->height)
 	{
 		if ((buffer_foreground[pixel] & 0xFF000000) == 0xFF000000)
-			buffer_foreground[pixel] = 0xFF000000 + buffer_background[row * background->width + col + \
-				pixel % foreground->width + \
-				(pixel / foreground->width) * background->width];
+			buffer_foreground[pixel] = buffer_background[pixel];
 		pixel++;
 	}
 }
@@ -127,6 +126,16 @@ int exit_game(maps *map, int x, int y)
 	return (map->collectible_count > 0 && map->content[map->width * y / GRID + x / GRID]->map_item == 'E');
 }
 
+void	update_state(characters *character, int offset_x, int offset_y)
+{
+	if (character->map->content[character->map->width * character->row / GRID + character->col / GRID]->map_item != 'E')
+		character->map->content[character->map->width * character->row / GRID + character->col / GRID]->map_item = '0';
+	character->col += offset_x;
+	character->row += offset_y;
+	if (character->map->content[character->map->width * character->row / GRID + character->col / GRID]->map_item != 'E')
+		character->map->content[character->map->width * character->row / GRID + character->col / GRID]->map_item = 'P';
+}
+
 int	move_right(void *param)
 {
 	characters	*character;
@@ -136,12 +145,13 @@ int	move_right(void *param)
 		return (0);
 	is_collectible(character->map, character->col + GRID, character->row);
 	mlx_put_image_to_window(character->screen->display, character->screen->window, character->background->background, character->col, character->row);
-	character->col += GRID;
+	update_state(character, GRID, 0);
 	character->current = character->right;
-	mlx_put_image_to_window(character->screen->display, character->screen->window, character->current, character->col, character->row);
 	increase_movement(character);
 	if (character->map->content[character->map->width * character->row / GRID + character->col / GRID]->map_item == 'E')
 	{
+		mlx_put_image_to_window(character->screen->display, character->screen->window, character->escape, character->col, character->row);
+		character->map->content[character->map->width * character->row / GRID + character->col / GRID]->map_item = 'D';
 		you_win();
 	}
 	
@@ -155,12 +165,13 @@ int	move_left(void *param)
 		return (0);
 	is_collectible(character->map, character->col - GRID, character->row);
 	mlx_put_image_to_window(character->screen->display, character->screen->window, character->background->background, character->col, character->row);
-	character->col -= GRID;
+	update_state(character, -GRID, 0);
 	character->current = character->left;
-	mlx_put_image_to_window(character->screen->display, character->screen->window, character->current, character->col, character->row);
 	increase_movement(character);
 	if (character->map->content[character->map->width * character->row / GRID + character->col / GRID]->map_item == 'E')
 	{
+		mlx_put_image_to_window(character->screen->display, character->screen->window, character->escape, character->col, character->row);
+		character->map->content[character->map->width * character->row / GRID + character->col / GRID]->map_item = 'D';
 		you_win();
 	}
 }
@@ -174,11 +185,12 @@ int	move_up(void *param)
 		return (0);
 	is_collectible(character->map, character->col, character->row - GRID);
 	mlx_put_image_to_window(character->screen->display, character->screen->window, character->background->background, character->col, character->row);
-	character->row -= GRID;
-	mlx_put_image_to_window(character->screen->display, character->screen->window, character->current, character->col, character->row);
+	update_state(character, 0, -GRID);
 	increase_movement(character);
 	if (character->map->content[character->map->width * character->row / GRID + character->col / GRID]->map_item == 'E')
 	{
+		mlx_put_image_to_window(character->screen->display, character->screen->window, character->escape, character->col, character->row);
+		character->map->content[character->map->width * character->row / GRID + character->col / GRID]->map_item = 'D';
 		you_win();
 	}
 }
@@ -192,11 +204,12 @@ int	move_down(void *param)
 		return (0);
 	is_collectible(character->map, character->col, character->row + GRID);
 	mlx_put_image_to_window(character->screen->display, character->screen->window, character->background->background, character->col, character->row);
-	character->row += GRID;
-	mlx_put_image_to_window(character->screen->display, character->screen->window, character->current, character->col, character->row);
+	update_state(character, 0, GRID);
 	increase_movement(character);
 	if (character->map->content[character->map->width * character->row / GRID + character->col / GRID]->map_item == 'E')
 	{
+		mlx_put_image_to_window(character->screen->display, character->screen->window, character->escape, character->col, character->row);
+		character->map->content[character->map->width * character->row / GRID + character->col / GRID]->map_item = 'D';
 		you_win();
 	}
 }
@@ -248,17 +261,16 @@ int	fill_map(screens *screen, maps *map, characters *character, t_img *grass, t_
 			pixels_y = row * GRID;
 			if (node->map_item == '1')
 				mlx_put_image_to_window(screen->display, screen->window, water, pixels_x, pixels_y);
-			else
+			else if (node->map_item == '0')
 				mlx_put_image_to_window(screen->display, screen->window, grass, pixels_x, pixels_y);
-			
-			if(node->map_item == 'C')
+			else if(node->map_item == 'C')
 			{
 				mlx_put_image_to_window(screen->display, screen->window, wool, pixels_x, pixels_y);
 				map->collectible_count += 1;
 			}
-			if(node->map_item == 'E')
+			else if(node->map_item == 'E')
 				mlx_put_image_to_window(screen->display, screen->window, hole, pixels_x, pixels_y);
-			if (node->map_item == 'P')
+			else if (node->map_item == 'P')
 			{
 				character->col = pixels_x;
 				character->row = pixels_y;
@@ -318,7 +330,10 @@ int	main(int argc, char **argv)
 	wool = mlx_xpm_file_to_image(display, "./images/xpm/wool.xpm", &width, &height);
 	hole = mlx_xpm_file_to_image(display, "./images/xpm/hole.xpm", &width, &height);
 	character.right = mlx_xpm_file_to_image(display,"./images/xpm/right_cat.xpm", &width, &height);
+	character.escape = mlx_xpm_file_to_image(display,"./images/xpm/right_cat.xpm", &width, &height);
 	character.left = mlx_xpm_file_to_image(display,"./images/xpm/left_cat.xpm", &width, &height);
+	merge_image(hole, character.escape, 0, 0);
+	merge_image(background.background, character.escape, 0, 0);
 	merge_image(background.background, wool, 0, 0);
 	merge_image(background.background, hole, 0, 0);
 	merge_image(background.background, character.right, 0, 0);

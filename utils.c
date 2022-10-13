@@ -1,14 +1,11 @@
 #include "get_next_line.h"
 #include <unistd.h>
 
-static int	ft_char_diff(const char *s1, const char *s2, size_t index)
-{
-	return ((int)((unsigned char)s1[index] - (unsigned char)s2[index]));
-}
-
 int	ft_strncmp(const char *s1, const char *s2, size_t size)
 {
-	size_t	index;
+	size_t			index;
+	unsigned char	c1;
+	unsigned char	c2;
 
 	if (size == 0)
 		return (0);
@@ -17,8 +14,14 @@ int	ft_strncmp(const char *s1, const char *s2, size_t size)
 		&& s1[index] != '\0' && s2[index] != '\0')
 		index++;
 	if (index == size && index != 0)
-		return (ft_char_diff(s1, s2, index - 1));
-	return (ft_char_diff(s1, s2, index));
+	{
+		c1 = s1[index - 1];
+		c2 = s2[index - 1];
+		return ((int)(c1 - c2));
+	}
+	c1 = s1[index];
+	c2 = s2[index];
+	return ((int)(c1 - c2));
 }
 
 char	*ft_strchr(const char *string, int c)
@@ -44,21 +47,9 @@ void	ft_putstr_fd(char *s, int fd)
 	write (fd, s, len(s));
 }
 
-static int	ft_get_digit_fd(int numerator)
-{
-	int	digit;
-
-	digit = 1;
-	while (numerator > 9)
-	{
-		numerator = numerator / 10;
-		digit++;
-	}
-	return (digit);
-}
-
 static void	ft_make_char_number_fd(int n, char *number, int digit, char signal)
 {
+	digit += signal;
 	number[digit] = '\0';
 	digit--;
 	while (digit >= 0)
@@ -76,6 +67,7 @@ void	ft_putnbr_fd(int n, int fd)
 	char	number[12];
 	char	signal;
 	int		digit;
+	int		numerator;
 
 	signal = 0;
 	if (n == -2147483648)
@@ -88,7 +80,13 @@ void	ft_putnbr_fd(int n, int fd)
 		n *= -1;
 		signal = 1;
 	}
-	digit = ft_get_digit_fd(n) + signal;
+	digit = 1;
+	numerator = n;
+	while (numerator > 9)
+	{
+		numerator = numerator / 10;
+		digit++;
+	}
 	ft_make_char_number_fd(n, number, digit, signal);
 	ft_putstr_fd(number, fd);
 }

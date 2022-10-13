@@ -1,104 +1,52 @@
 #include "validation.h"
 #include "maps.h"
 #include "linked_list.h"
+#include "search_utils.h"
 #include <stdlib.h>
-
 
 int	distance(int x, int y, int target_x, int target_y)
 {
-	return (x - target_x) * (x - target_x) + (y - target_y) * (y - target_y);
+	return ((x - target_x) * (x - target_x) + (y - target_y) * (y - target_y));
 }
 
-void	add_node(linked_list **head, linked_list **last, nodes *node)
+t_nodes	*evaluate_node(t_nodes *current, t_nodes *target)
 {
-	if (node == NULL)
-		return ;
-	if (*head == NULL)
-	{
-		*head = new_linked_list_element(node);
-		*last = *head;
-		return ;
-	}
-	(*last)->next = new_linked_list_element(node);
-	*last = (*last)->next;
-}
-
-nodes	*find_minimum_evaluation(linked_list **head, linked_list **last)
-{
-	linked_list	*minimum;
-	linked_list	*element;
-	linked_list	*previous;
-	linked_list	*temp;
-	nodes		*result;
-
-	if (*head == NULL)
+	if (current->map_item == '1' || current->visited == 1)
 		return (NULL);
-	previous = NULL;
-	element = *head;
-	minimum = element;
-	while (element->next != NULL)
-	{
-		temp = element;
-		element = element->next;
-		if (element->content->evaluation < minimum->content->evaluation)
-		{
-			previous = temp;
-			minimum = element;
-		}
-	}
-	if (previous == NULL)
-	{
-		*head = minimum->next;
-		result = minimum->content;
-		free(minimum);
-		return (result);
-	}
-	if (minimum == *last)
-		*last = previous;
-	previous->next = minimum->next;
-	result = minimum->content;
-	free(minimum);
-	return (result);
+	current->evaluation = distance(current->x, current->y, \
+		target->x, target->y);
+	return (current);
 }
 
-void evaluate_node(maps *map, nodes *target, nodes *current, linked_list **to_visit, linked_list **last, int x, int y)
+void	call_evaluate_node(t_maps *map, t_nodes *target, t_nodes *current, \
+	t_linked_list **to_visit)
 {
-	nodes	*node;
-	int coord;
+	t_nodes	*node;
 
-	coord = current->x + x + (current->y + y ) * map->width;
-	node = map->content[coord];
-	if (node->map_item == '1' || node->visited == 1)
-		return ;
-	node->evaluation = distance(node->x,node->y, target->x, target->y);
-	add_node(to_visit, last, node);
+	node = map->content[current->y * map->width + current->x + 1];
+	add_node(to_visit, evaluate_node(node, target));
+	node = map->content[current->y * map->width + current->x - 1];
+	add_node(to_visit, evaluate_node(node, target));
+	node = map->content[(current->y + 1) * map->width + current->x];
+	add_node(to_visit, evaluate_node(node, target));
+	node = map->content[(current->y - 1) * map->width + current->x];
+	add_node(to_visit, evaluate_node(node, target));
 }
 
-void call_evaluate_node(maps *map, nodes *target, nodes *current, linked_list **to_visit, linked_list **last)
+t_nodes	*search(t_maps *map, t_nodes *start, t_nodes *target)
 {
-	evaluate_node(map, target, current, to_visit, last, 1 , 0);
-	evaluate_node(map, target, current, to_visit, last, -1 , 0);
-	evaluate_node(map, target, current, to_visit, last, 0 , 1);
-	evaluate_node(map, target, current, to_visit, last, 0 , -1);
-
-}
-
-
-nodes	*search(maps *map, nodes *start, nodes *target)
-{
-	nodes	*current;
-	linked_list	*to_visit;
-	linked_list	*last;
+	t_nodes			*current;
+	t_linked_list	*to_visit;
 
 	to_visit = NULL;
-	last = NULL;
 	current = start;
-	current->evaluation = distance(current->x, current->y, target->x, target->y);
+	current->evaluation = distance(current->x, current->y, target->x, \
+		target->y);
 	current->visited = 1;
 	while (current->evaluation != 0)
 	{
-		call_evaluate_node(map, target, current, &to_visit, &last);
-		current = find_minimum_evaluation(&to_visit, &last);
+		call_evaluate_node(map, target, current, &to_visit);
+		current = find_minimum_evaluation(&to_visit);
 		if (current == NULL)
 			return (NULL);
 		current->visited = 1;

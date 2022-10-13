@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   get_next_line_utils.c                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: tmariano <tmariano@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: luceduar <luceduar@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/03/27 21:11:15 by tmariano          #+#    #+#             */
-/*   Updated: 2022/04/06 22:17:40 by tmariano         ###   ########.fr       */
+/*   Updated: 2022/10/13 10:31:31 by luceduar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,6 +67,10 @@ char	*join(char *s1, char *s2, size_t n)
 	concat = malloc(n * sizeof(*concat));
 	if (concat == NULL)
 		return (concat);
+	if (s1 == NULL)
+		s1 = "";
+	if (s2 == NULL)
+		s2 = "";
 	ft_strlcpy(concat, s1, n);
 	ft_strlcat(concat, s2, n);
 	return (concat);

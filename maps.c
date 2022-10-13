@@ -2,26 +2,31 @@
 #include "structs.h"
 #include "get_next_line.h"
 #include "utils.h"
-#include "validation.h"
+#include "maps_utils.h"
+#include "mlx.h"
 #include <unistd.h>
 #include <stdlib.h>
 #include <fcntl.h>
 
-
-nodes	*new_node(int x, int y, char element)
+void	clean_map_visit(t_maps *map)
 {
-	nodes	*node;
+	int	x;
+	int	y;
 
-	node = malloc(sizeof(*node));
-	node->x = x;
-	node->y = y;
-	node->map_item = element;
-	node->visited = 0;
-	return (node);
+	y = 0;
+	while (y < map->height)
+	{
+		x = 0;
+		while (x < map->width)
+		{
+			map->content[x + y * map->width]->visited = 0;
+			x++;
+		}
+		y++;
+	}
 }
 
-
-void	free_map(maps *map)
+void	free_map(t_maps *map)
 {
 	int	x;
 	int	y;
@@ -41,123 +46,69 @@ void	free_map(maps *map)
 	free(map);
 }
 
-int	validate(int fd, char *content, char *line, int width, int height)
+t_maps	*read_map(const char *file)
 {
-	size_t	size;
+	int			file_descriptor;
+	t_maps		*map;
+	char		*content;
+	t_map_size	map_size;
 
-	size = len(line);
-	if (size > 0 && line[size - 1] == '\n')
-			size--;
-	if (!valid_content(line))
-	{
-		ft_putstr_fd("Error\nMap has invalid content.\n", STDERR_FILENO);
-		free(content);
-		while (line != NULL)
-		{
-			free(line);
-			line = get_next_line(fd);
-		}
-		close(fd);
-		exit(1);
-	}
-	if (size > MAX_WIDTH)
-	{
-		ft_putstr_fd("Error\nMap has invalid width. Max width is 38 characters.\n", STDERR_FILENO);
-		free(content);
-		while (line != NULL)
-		{
-			free(line);
-			line = get_next_line(fd);
-		}
-		close(fd);
-		exit(1);
-	}
-	if (height > MAX_HEIGHT)
-	{
-		ft_putstr_fd("Error\nMap has invalid height. Max height is 19 lines.\n", STDERR_FILENO);
-		free(content);
-		while (line != NULL)
-		{
-			free(line);
-			line = get_next_line(fd);
-		}
-		close(fd);
-		exit(1);
-	}
-	if (size != width)
-	{
-		ft_putstr_fd("Error\nMap must be rectangular.\n", STDERR_FILENO);
-		free(content);
-		while (line != NULL)
-		{
-			free(line);
-			line = get_next_line(fd);
-		}
-		close(fd);
-		exit(1);
-	}
-}
-
-maps	*read_map(const char *file)
-{
-	int	file_descriptor;
-	maps	*map;
-	char	*content;
-	char	*temp;
-	char	*line;
-	int	height;
-	int	width;
-	int	x;
-	int	y;
-	int	coord;
-	size_t	size;
-
-	content = NULL;
 	file_descriptor = open(file, O_RDONLY);
 	if (file_descriptor < 0)
 		return (NULL);
-	line = "";
-	height = 0;
-	width = 0;
-	size = 0;
-	while (line != NULL)
-	{
-		temp = content;
-		if (content == NULL)
-			content = "";
-		content = join(content, line, len(content) + size + 1);
-		if (*line != '\0')
-			free(line);
-		free(temp);
-		line = get_next_line(file_descriptor);
-		size = len(line);
-		if (size > 0 && line[size - 1] == '\n')
-			size--;
-		if (width == 0)
-			width = (int) size;
-		if (line != NULL)
-			validate(file_descriptor, content, line, width, 0);
-		if (size > 0)
-			height++;
-	}
-	map = malloc(sizeof(*map));
-	if (map == NULL)
-		return (NULL);
-	map->content = malloc(sizeof(*(map->content)) * height * width);
-	y = 0;
-	while (y < height)
-	{
-		x = 0;
-		while (x < width)
-		{
-			coord = x + y * width;
-			map->content[coord] = new_node(x, y, content[coord]);
-			x++;
-		}
-		y++;
-	}
+	map_size.height = 0;
+	map_size.width = 0;
+	content = read_all_file(file_descriptor, &map_size);
+	map = create_map(map_size.height, map_size.width, content);
 	free(content);
-	map->height = height;
-	map->width = width;
 	return (map);
+}
+
+void	fill_node(t_nodes *node, t_characters *character, int x, int y)
+{
+	if (node->map_item == '1')
+		mlx_put_image_to_window(character->screen->display, \
+			character->screen->window, character->water, x, y);
+	else if (node->map_item == '0')
+		mlx_put_image_to_window(character->screen->display, \
+			character->screen->window, character->background, x, y);
+	else if (node->map_item == 'C')
+	{
+		mlx_put_image_to_window(character->screen->display, \
+			character->screen->window, character->wool, x, y);
+		character->map->collectible_count++;
+	}
+	else if (node->map_item == 'E')
+		mlx_put_image_to_window(character->screen->display, \
+			character->screen->window, character->hole, x, y);
+	else if (node->map_item == 'P')
+	{
+		character->col = x;
+		character->row = y;
+		mlx_put_image_to_window(character->screen->display, \
+			character->screen->window, character->current, x, y);
+	}
+	else if (node->map_item == 'D')
+		mlx_put_image_to_window(character->screen->display, \
+			character->screen->window, character->escape, x, y);
+}
+
+void	fill_map(t_maps *map, t_characters *character)
+{
+	int		row;
+	int		col;
+
+	map->collectible_count = 0;
+	row = 0;
+	while (row < map->height)
+	{
+		col = 0;
+		while (col < map->width)
+		{
+			fill_node(map->content[row * map->width + col], character, \
+				col * GRID, row * GRID);
+			col++;
+		}
+		row++;
+	}
 }

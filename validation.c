@@ -1,10 +1,10 @@
 #include "constants.h"
 #include "get_next_line.h"
 #include "structs.h"
+#include "error_handler.h"
 #include "maps.h"
 #include "search.h"
 #include "utils.h"
-
 
 int	valid_content(char *line)
 {
@@ -13,120 +13,89 @@ int	valid_content(char *line)
 	return (*line == '\n' || *line == '\0');
 }
 
-int	valid_width(char *line, int width)
+void	validate_collectible(t_maps *map, t_nodes *start, int x, int y)
 {
-	size_t	length;
+	t_nodes	*node;
 
-	length = len(line);
-	return (length == width && length <= MAX_WIDTH);
+	node = map->content[x + y * map->width];
+	if (node->map_item == 'C')
+	{
+		clean_map_visit(map);
+		node = search(map, start, node);
+		if (node == NULL)
+			map_error(map, "Map must have a valid path to each" \
+				"collectible.\n", &free_map);
+	}
 }
 
-void	clean_map_visit(maps *map)
+void	validate_collectibles(t_maps *map, t_nodes *start)
 {
-	int	x;
-	int	y;
-	
+	int		x;
+	int		y;
+	int		has_collectible;
+
 	y = 0;
+	has_collectible = 0;
 	while (y < map->height)
 	{
 		x = 0;
 		while (x < map->width)
 		{
-			map->content[x + y * map->width]->visited = 0;
+			if (map->content[x + y * map->width]->map_item == 'C')
+				has_collectible = 1;
+			validate_collectible(map, start, x, y);
 			x++;
 		}
 		y++;
 	}
+	if (!has_collectible)
+		map_error(map, "Map must have at least one collectible.\n", &free_map);
 }
 
-void	validate_map(maps *map)
+void	validate_start_and_exit(t_maps *map, t_nodes **start, t_nodes **target)
 {
-	nodes	*start;
-	nodes	*target;
-	nodes	*node;
-	const int first_row = 0;
-	const int last_row = map->height - 1;
-	const int first_column = 0;
-	const int last_column = map->width - 1;
+	t_nodes	*node;
 	int		x;
 	int		y;
 
+	y = 0;
+	while (y < map->height)
+	{
+		x = 0;
+		while (x < map->width)
+		{
+			node = map->content[x + y * map->width];
+			if ((y == 0 || x == 0 || y == map->height - 1 || \
+				x == map->width - 1) && node->map_item != '1')
+				map_error(map, "Map must be surrounded by walls.\n", &free_map);
+			if ((*start != NULL && node->map_item == 'P') || \
+				(*target != NULL && node->map_item == 'E'))
+				map_error(map, "Map has multiple start or exits.\n", &free_map);
+			if (node->map_item == 'P')
+				*start = node;
+			else if (node->map_item == 'E')
+				*target = node;
+			x++;
+		}
+		y++;
+	}
+}
+
+void	validate_map(t_maps *map)
+{
+	t_nodes		*start;
+	t_nodes		*target;
+	t_nodes		*node;
+
 	start = NULL;
 	target = NULL;
-	y = 0;
-	while (y < map->height)
-	{
-		x = 0;
-		while (x < map->width)
-		{
-			node = map->content[x + y * map->width];
-			if((first_row == y || first_column == x || last_row == y || last_column == x) && node->map_item != '1')
-			{
-				free_map(map);
-				ft_putstr_fd("Error\nMap must be surrounded by walls.\n", STDERR_FILENO);
-				exit(1);
-			}
-			if ((start != NULL && node->map_item == 'P') || (target != NULL && node->map_item == 'E'))
-			{
-				free_map(map);
-				ft_putstr_fd("Error\nMap has multiples starting positions or exits.\n", STDERR_FILENO);
-				exit(1);
-			}
-			if (node->map_item == 'P')
-				start = node;
-			else if (node->map_item == 'E')
-				target = node;
-			x++;
-		}
-		y++;
-	}
+	validate_start_and_exit(map, &start, &target);
 	if (start == NULL)
-	{
-		free_map(map);
-		ft_putstr_fd("Error\nMap must have one starting position.\n", STDERR_FILENO);
-		exit(1);
-	}
+		map_error(map, "Map must have one starting position.\n", &free_map);
 	if (target == NULL)
-	{
-		free_map(map);
-		ft_putstr_fd("Error\nMap must have one exit.\n", STDERR_FILENO);
-		exit(1);
-	}
+		map_error(map, "Map must have one exit.\n", &free_map);
 	node = search(map, start, target);
 	if (node == NULL)
-	{
-		free_map(map);
-		ft_putstr_fd("Error\nMap must have a valid path to exit.\n", STDERR_FILENO);
-		exit(1);
-	}
-	y = 0;
-	target = NULL;
-	while (y < map->height)
-	{
-		x = 0;
-		while (x < map->width)
-		{
-			node = map->content[x + y * map->width];
-			if (node->map_item == 'C')
-			{
-				clean_map_visit(map);
-				target = node;
-				node = search(map, start, target);
-				if (node == NULL)
-				{
-					free_map(map);
-					ft_putstr_fd("Error\nMap must have a valid path to each collectible.\n", STDERR_FILENO);
-					exit(1);
-				}
-			}
-			x++;
-		}
-		y++;
-	}
-	if (target == NULL)
-	{
-		free_map(map);
-		ft_putstr_fd("Error\nMap must have at least one collectible.\n", STDERR_FILENO);
-		exit(1);
-	}
+		map_error(map, "Map must have a valid path to exit.\n", &free_map);
+	validate_collectibles(map, start);
 }

@@ -2,6 +2,6 @@
 # define SEARCH_H
 # include "structs.h"
 
-nodes	*search(maps *map, nodes *start, nodes *target);
+t_nodes	*search(t_maps *map, t_nodes *start, t_nodes *target);
 
 #endif

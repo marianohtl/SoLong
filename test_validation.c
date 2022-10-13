@@ -6,9 +6,9 @@
 #define GREEN "\033[32m"
 #define RESET "\033[0m"
 
-nodes	*search(maps *map, nodes *start, nodes *target);
+t_nodes	*search(t_maps *map, t_nodes *start, t_nodes *target);
 
-void	check_map(maps *map, nodes *start, nodes *target)
+void	check_map(t_maps *map, t_nodes *start, t_nodes *target)
 {
 	if (search(map, start, target) == NULL)
 	{
@@ -20,7 +20,7 @@ void	check_map(maps *map, nodes *start, nodes *target)
 
 int	main(void)
 {
-	maps	*map;
+	t_maps	*map;
 
 
 	map = read_map("maps/test_map.ber");

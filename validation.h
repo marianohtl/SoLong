@@ -2,8 +2,7 @@
 # define VALIDATION_H
 # include "structs.h"
 
-int	valid_content(char *line);
-int	valid_width(char *line, int width);
-void	validate_map(maps *map);
+int		valid_content(char *line);
+void	validate_map(t_maps *map);
 
 #endif

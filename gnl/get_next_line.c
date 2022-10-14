@@ -6,7 +6,7 @@
 /*   By: tmariano <tmariano@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/03/27 21:11:15 by tmariano          #+#    #+#             */
-/*   Updated: 2022/04/08 12:01:16 by tmariano         ###   ########.fr       */
+/*   Updated: 2022/10/13 22:39:18 by tmariano         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,8 +66,8 @@ static char	*new_line(char **buffer, char **next, int has_new_line,
 	if (!*next)
 		return (NULL);
 	ft_strlcpy(*buffer, &(*buffer)[has_new_line + 1],
-		read_bytes - (size_t)has_new_line); //buffer sem next
-	ft_strset(&(*buffer)[read_bytes - (size_t)has_new_line], has_new_line + 1); //limpa o que sobrou
+		read_bytes - (size_t)has_new_line);
+	ft_strset(&(*buffer)[read_bytes - (size_t)has_new_line], has_new_line + 1);
 	return (*next);
 }
 

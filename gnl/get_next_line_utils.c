@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   get_next_line_utils.c                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: luceduar <luceduar@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: tmariano <tmariano@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/03/27 21:11:15 by tmariano          #+#    #+#             */
-/*   Updated: 2022/10/13 10:31:31 by luceduar         ###   ########.fr       */
+/*   Updated: 2022/10/13 22:39:55 by tmariano         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 

@@ -4,23 +4,10 @@
 #include "utils.h"
 #include "validation.h"
 #include "maps.h"
+#include "search.h"
 #include "error_handler.h"
 #include <stdlib.h>
 #include <fcntl.h>
-
-t_nodes	*new_node(int x, int y, char element)
-{
-	t_nodes	*node;
-
-	node = malloc(sizeof(*node));
-	if (node == NULL)
-		return (NULL);
-	node->x = x;
-	node->y = y;
-	node->map_item = element;
-	node->visited = 0;
-	return (node);
-}
 
 void	file_error(char *message, int fd, char *content, char *line)
 {
@@ -51,26 +38,16 @@ void	validate(int fd, char *content, char *line, t_map_size *map_size)
 	if (map_size->height > MAX_HEIGHT)
 		file_error("Map has invalid height. Max height is 19 lines.\n", fd, \
 			content, line);
-	if (length < 1 || length != map_size->width)
+	if (length < 1 || (int) length != map_size->width)
 		file_error("Map must be rectangular.\n", fd, content, line);
 }
 
-t_maps	*create_map(int height, int width, char *content)
+void	add_nodes_to_map(t_maps *map, int height, int width, char *content)
 {
-	t_maps	*map;
-	t_nodes	*node;
 	int		x;
 	int		y;
+	t_nodes	*node;
 
-	map = malloc(sizeof(*map));
-	if (map == NULL)
-		return (NULL);
-	map->content = malloc(sizeof(*(map->content)) * height * width);
-	if (map->content == NULL)
-	{
-		free(map);
-		return (NULL);
-	}
 	y = 0;
 	while (y < height)
 	{
@@ -86,8 +63,25 @@ t_maps	*create_map(int height, int width, char *content)
 		}
 		y++;
 	}
+}
+
+t_maps	*create_map(int height, int width, char *content)
+{
+	t_maps	*map;
+
+	map = malloc(sizeof(*map));
+	if (map == NULL)
+		return (NULL);
+	map->content = malloc(sizeof(*(map->content)) * height * width);
+	if (map->content == NULL)
+	{
+		free(map);
+		return (NULL);
+	}
+	add_nodes_to_map(map, height, width, content);
 	map->height = height;
 	map->width = width;
+	return (map);
 }
 
 char	*read_all_file(int file_descriptor, t_map_size *map_size)

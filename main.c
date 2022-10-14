@@ -48,6 +48,7 @@ int	update_window(void *param)
 
 	character = param;
 	fill_map(character->map, character);
+	return (0);
 }
 
 int	main(int argc, char **argv)
@@ -67,10 +68,8 @@ int	main(int argc, char **argv)
 	validate_map(map);
 	initialize_screen(&screen, map);
 	if (screen.display == NULL || screen.window == NULL)
-	{
-		free_map(map, map->height * map->width + 1);
-		quit_program("Failed to create a window on display.\n");
-	}
+		map_error(map, map->width * map->height + 1, \
+			"Failed to create window on display.\n", &free_map);
 	initialize_character(&character, map, &screen);
 	fill_map(map, &character);
 	mlx_key_hook(screen.window, &key_delegator, &character);

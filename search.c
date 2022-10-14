@@ -4,6 +4,20 @@
 #include "search_utils.h"
 #include <stdlib.h>
 
+t_nodes	*new_node(int x, int y, char element)
+{
+	t_nodes	*node;
+
+	node = malloc(sizeof(*node));
+	if (node == NULL)
+		return (NULL);
+	node->x = x;
+	node->y = y;
+	node->map_item = element;
+	node->visited = 0;
+	return (node);
+}
+
 int	distance(int x, int y, int target_x, int target_y)
 {
 	return ((x - target_x) * (x - target_x) + (y - target_y) * (y - target_y));

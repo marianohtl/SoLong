@@ -55,7 +55,6 @@ t_maps	*read_map(const char *file)
 	int			file_descriptor;
 	t_maps		*map;
 	char		*content;
-
 	t_map_size	map_size;
 
 	file_descriptor = open(file, O_RDONLY);

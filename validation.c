@@ -59,11 +59,11 @@ void	validate_start_and_exit(t_maps *map, t_nodes **start, t_nodes **target)
 	int		x;
 	int		y;
 
-	y = 0;
-	while (y < map->height)
+	y = -1;
+	while (++y < map->height)
 	{
-		x = 0;
-		while (x < map->width)
+		x = -1;
+		while (++x < map->width)
 		{
 			node = map->content[x + y * map->width];
 			if ((y == 0 || x == 0 || y == map->height - 1 || \
@@ -78,9 +78,7 @@ void	validate_start_and_exit(t_maps *map, t_nodes **start, t_nodes **target)
 				*start = node;
 			else if (node->map_item == 'E')
 				*target = node;
-			x++;
 		}
-		y++;
 	}
 }
 

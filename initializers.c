@@ -26,7 +26,7 @@ void	free_resources(t_characters *character)
 	free(character->screen->display);
 }
 
-void	merge_image(t_img *background, t_img *foreground, int row, int col)
+void	merge_image(t_img *background, t_img *foreground)
 {
 	int	*buffer_background;
 	int	*buffer_foreground;
@@ -75,11 +75,11 @@ void	initialize_character(t_characters *character, t_maps *map, \
 		free_resources(character);
 		quit_program("Failed to load all the images.\n");
 	}
-	merge_image(character->hole, character->escape, 0, 0);
-	merge_image(character->sand, character->escape, 0, 0);
-	merge_image(character->sand, character->wool, 0, 0);
-	merge_image(character->sand, character->hole, 0, 0);
-	merge_image(character->sand, character->right, 0, 0);
-	merge_image(character->sand, character->left, 0, 0);
+	merge_image(character->hole, character->escape);
+	merge_image(character->sand, character->escape);
+	merge_image(character->sand, character->wool);
+	merge_image(character->sand, character->hole);
+	merge_image(character->sand, character->right);
+	merge_image(character->sand, character->left);
 	character->current = character->right;
 }

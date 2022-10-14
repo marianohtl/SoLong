@@ -44,7 +44,10 @@ char	*ft_strchr(const char *string, int c)
 
 void	ft_putstr_fd(char *s, int fd)
 {
-	write (fd, s, len(s));
+	ssize_t	size;
+
+	size = write(fd, s, len(s));
+	(void) size;
 }
 
 static void	ft_make_char_number_fd(int n, char *number, int digit, char signal)

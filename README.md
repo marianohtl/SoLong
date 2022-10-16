@@ -125,3 +125,17 @@ The bonus part will only be assessed if the mandatory part is PERFECT. Perfect m
 
 <br>
 
+## Result
+
+<br>
+
+![](https://raw.githubusercontent.com/marianohtl/SoLong/master/images/png/game01.png)
+
+<br>
+
+![](https://raw.githubusercontent.com/marianohtl/SoLong/master/images/png/game02.png)
+
+<br>
+
+![](https://raw.githubusercontent.com/marianohtl/SoLong/master/images/png/game03.png)
+
